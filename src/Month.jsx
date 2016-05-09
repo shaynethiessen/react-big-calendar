@@ -185,7 +185,7 @@ let MonthView = React.createClass({
         .concat(row.slice(start, end + 1))
 
       clearTimeout(self._selectTimer)
-      self._selectTimer = setTimeout(()=> self._selectDates(idx, row))
+      self._selectTimer = setTimeout(()=> self._selectDates(idx, start))
     }
 
     return (
@@ -336,9 +336,9 @@ let MonthView = React.createClass({
   },
 
   _selectDates(row, column){
-    let col = column.start;
+    let col = column;
     let slots = this._pendingSelection.slice()
-    var cell = _reactDom.findDOMNode(this._bgRows[row]).children[col];
+    var cell = findDOMNode(this._bgRows[row]).children[col];
 
     this._pendingSelection = []
 
