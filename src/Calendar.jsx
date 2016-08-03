@@ -19,6 +19,8 @@ import Toolbar from './Toolbar';
 
 import omit from 'lodash/object/omit';
 import defaults from 'lodash/object/defaults';
+import transform from 'lodash/object/transform';
+import mapValues from 'lodash/object/mapValues';
 
 function viewNames(_views){
   return !Array.isArray(_views) ? Object.keys(_views) : _views
@@ -156,6 +158,11 @@ let Calendar = React.createClass({
     selectable: PropTypes.bool,
 
     /**
+     * Determines the selectable time increments in week and day views
+     */
+    step: React.PropTypes.number,
+
+    /**
      * switch the calendar to a `right-to-left` read direction.
      */
     rtl: PropTypes.bool,
@@ -211,9 +218,14 @@ let Calendar = React.createClass({
     min: PropTypes.instanceOf(Date),
 
     /**
-     * Constrains the maximum _time_ of the Day and Week views..
+     * Constrains the maximum _time_ of the Day and Week views.
      */
     max: PropTypes.instanceOf(Date),
+
+    /**
+     * Determines how far down the scroll pane is initially scrolled down.
+     */
+    scrollToTime: PropTypes.instanceOf(Date),
 
     /**
      * Localizer specific formats, tell the Calendar how to format and display dates.
@@ -270,6 +282,7 @@ let Calendar = React.createClass({
      * ```jsx
      * let components = {
      *   event: MyEvent, // used by each view (Month, Day, Week)
+     *   toolbar: MyToolbar,
      *   agenda: {
      *   	 event: MyAgendaEvent // with the agenda view use a different component to render events
      *   }
@@ -279,6 +292,8 @@ let Calendar = React.createClass({
      */
     components: PropTypes.shape({
       event: elementType,
+
+      toolbar: elementType,
 
       agenda: PropTypes.shape({
         date: elementType,
@@ -314,12 +329,39 @@ let Calendar = React.createClass({
       view: views.MONTH,
       views: [views.MONTH, views.WEEK, views.DAY, views.AGENDA],
       date: now,
+      step: 30,
 
       titleAccessor: 'title',
       allDayAccessor: 'allDay',
       startAccessor: 'start',
       endAccessor: 'end'
     };
+  },
+
+  getViews() {
+    const views = this.props.views;
+
+    if (Array.isArray(views)) {
+      return transform(views, (obj, name) => obj[name] = VIEWS[name], {});
+    }
+
+    if (typeof views === 'object') {
+      return mapValues(views, (value, key) => {
+        if (value === true) {
+          return VIEWS[key];
+        }
+
+        return value;
+      });
+    }
+
+    return VIEWS;
+  },
+
+  getView() {
+    const views = this.getViews();
+
+    return views[this.props.view];
   },
 
   render() {
@@ -335,7 +377,7 @@ let Calendar = React.createClass({
 
     formats = defaultFormats(formats)
 
-    let View = VIEWS[view];
+    let View = this.getView();
     let names = viewNames(this.props.views)
 
     let elementProps = omit(this.props, Object.keys(Calendar.propTypes))
@@ -345,6 +387,8 @@ let Calendar = React.createClass({
       omit(components, names)
     )
 
+    let ToolbarToRender = components.toolbar || Toolbar
+
     return (
       <div {...elementProps}
         className={cn('rbc-calendar', className, {
@@ -353,7 +397,7 @@ let Calendar = React.createClass({
         style={style}
       >
         { toolbar &&
-          <Toolbar
+          <ToolbarToRender
             date={current}
             view={view}
             views={names}
@@ -424,4 +468,8 @@ let Calendar = React.createClass({
   }
 });
 
-export default uncontrollable(Calendar, { view: 'onView', date: 'onNavigate', selected: 'onSelectEvent' })
+export default uncontrollable(Calendar, {
+  view: 'onView',
+  date: 'onNavigate',
+  selected: 'onSelectEvent'
+})
