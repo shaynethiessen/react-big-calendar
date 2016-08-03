@@ -22,7 +22,7 @@ let EventCell = React.createClass({
     
     for (var i = 0; i < title.props.children.length; i++) {
       if(title.props.children[i] !== null && typeof title.props.children[i] !== 'object') {
-        hoverText += title.props.children[i].toString();
+        hoverTitle += title.props.children[i].toString();
       }
     }
 
