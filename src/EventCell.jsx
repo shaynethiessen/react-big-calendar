@@ -13,11 +13,18 @@ let EventCell = React.createClass({
     let Component = component;
 
     let title = get(event, titleAccessor)
+      , hoverTitle = ''
       , end = get(event, endAccessor)
       , start = get(event, startAccessor)
       , isAllDay = get(event, props.allDayAccessor)
       , continuesPrior = dates.lt(start, slotStart, 'day')
       , continuesAfter = dates.gt(end, slotEnd, 'day')
+    
+    for (var i = 0; i < title.props.children.length; i++) {
+      if(title.props.children[i] !== null && typeof title.props.children[i] !== 'object') {
+        hoverText += title.props.children[i].toString();
+      }
+    }
 
     if (eventPropGetter)
       var { style, className: xClassName } = eventPropGetter(event, start, end, selected);
@@ -34,7 +41,7 @@ let EventCell = React.createClass({
         })}
         onClick={()=> onSelect(event)}
       >
-        <div className='rbc-event-content' title={title}>
+        <div className='rbc-event-content' title={hoverTitle}>
           { Component
             ? <Component event={event} title={title}/>
             : title
