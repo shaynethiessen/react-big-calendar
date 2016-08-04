@@ -21,7 +21,7 @@ let EventCell = React.createClass({
       , continuesAfter = dates.gt(end, slotEnd, 'day')
     
     for (var i = 0; i < title.props.children.length; i++) {
-      if(title.props.children[i] !== null && typeof title.props.children[i] !== 'object') {
+      if (title.props.children[i] !== null && title.props.children[i] !== undefined && _typeof(title.props.children[i]) !== 'object') {
         hoverTitle += title.props.children[i].toString();
       }
     }
